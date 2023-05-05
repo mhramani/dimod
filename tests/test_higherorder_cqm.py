@@ -91,6 +91,20 @@ class TestMakeQuadratic(unittest.TestCase):
 
             self.assertAlmostEqual(energy, min(reduced_energies))
 
+    def test_linear_model(self):
+        poly = {(0, 1, 2): -1, (1, 2, 3): 1, (0, 2, 3): .5}
+        cqm = make_quadratic_cqm(poly, dimod.BINARY,
+                                 cqm=dimod.ConstrainedQuadraticModel(),
+                                 linear_constraints=True)
+        self.assertTrue(cqm.num_constraints() == 4)
+        for c, v in cqm.constraints.items():
+            self.assertTrue(('_l' in c) or ('_g' in c))
+            if '_l' in c:
+                self.assertTrue(list(v.lhs.linear.values()) == [2, -1, -1])
+                self.assertTrue(v.rhs == 0.0)
+            elif '_g' in c:
+                self.assertTrue(list(v.lhs.linear.values() )== [1, -1, -1])
+                self.assertTrue(v.rhs == -1.0)
 
     def test_several_terms(self):
         poly = {(0, 1, 2): -1, (1, 2, 3): 1, (0, 2, 3): .5,

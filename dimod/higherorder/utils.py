@@ -221,8 +221,8 @@ def _init_objective(bqm, reduced_terms):
 
 def make_quadratic_cqm(poly: Union[Polynomial, BinaryPolynomial],
                        vartype: Optional[Vartype] = None,
-                       cqm: Optional[ConstrainedQuadraticModel] = None
-                       ) -> ConstrainedQuadraticModel:
+                       cqm: Optional[ConstrainedQuadraticModel] = None,
+                       linear_constraints: bool = False) -> ConstrainedQuadraticModel:
     """Create a constrained quadratic model from a higher order polynomial.
 
     Args:
@@ -242,6 +242,9 @@ def make_quadratic_cqm(poly: Union[Polynomial, BinaryPolynomial],
         cqm:
             Terms of the reduced polynomial are added to this constrained quadratic
             model. If not provided, a new constrained quadratic model is created.
+        linear_constraints:
+             If Flase two linear constraints are used to model auxillary variables
+             otherwise one quadratic constraint is used
 
     Examples:
 
@@ -258,9 +261,16 @@ def make_quadratic_cqm(poly: Union[Polynomial, BinaryPolynomial],
 
     def var(x):
         return BinaryQuadraticModel({x: 1.0}, {}, 0.0, vartype)
-
-    for (u, v), p in constraints:
-        cqm.add_constraint( var(u)*var(v) - var(p)  == 0, label = f"'{u}'*'{v}' == '{p}'")
+    if linear_constraints:
+        for (u, v), p in constraints:
+            c = f"'{u}'*'{v}' == '{p}'"
+            cqm.add_constraint(2 * var(p) - var(u) -
+                               var(v) <= 0, c + '_l')
+            cqm.add_constraint(var(p) - var(u) -
+                               var(v) >= -1, c + '_g')
+    else:
+        for (u, v), p in constraints:
+            cqm.add_constraint( var(u)*var(v) - var(p) == 0, label = f"'{u}'*'{v}' == '{p}'")
 
     obj = BinaryQuadraticModel(vartype=vartype)
     _init_objective(obj, reduced_terms)
