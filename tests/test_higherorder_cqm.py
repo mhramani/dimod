@@ -91,6 +91,22 @@ class TestMakeQuadratic(unittest.TestCase):
 
             self.assertAlmostEqual(energy, min(reduced_energies))
 
+    def test_ploy_order(self):
+        x = {frozenset({0, 1, 2, 3}): 11,
+             frozenset({0, 2, 3, 4}): 12,
+             frozenset({1, 3, 4, 5}): 13,
+             frozenset({2, 3, 4, 5}): 14,
+             frozenset({1, 2, 3, 4, 5}): 15,
+             frozenset({0, 1, 2, 4, 5}): 16,
+             frozenset({0, 1, 2, 3, 4, 5}): 17}
+
+        poly = dimod.BinaryPolynomial(x, 'BINARY')
+        for i in range(1):
+            cqm = dimod.make_quadratic_cqm(poly)
+        self.assertEqual(cqm.num_variables(), 11)
+        self.assertEqual(cqm.num_constraints(), 5)
+        self.assertEqual(cqm.num_biases(), 36)
+
     def test_linear_model(self):
         poly = {(0, 1, 2): -1, (1, 2, 3): 1, (0, 2, 3): .5}
         cqm = make_quadratic_cqm(poly, dimod.BINARY,

@@ -89,7 +89,7 @@ def _decrement_count(idx, que, pair):
     if not que_count:
         del que[count]
     if count > 1:
-        que[count - 1].add(pair)
+        que[count - 1].append(pair)
 
 
 def _remove_old(idx, term, pair):
@@ -139,9 +139,9 @@ def reduce_binary_polynomial(poly: BinaryPolynomial) -> Tuple[
             for pair in itertools.combinations(term, 2):
                 idx[frozenset(pair)][term] = bias
 
-    que = defaultdict(set)
+    que = defaultdict(list)
     for pair, terms in idx.items():
-        que[len(terms)].add(pair)
+        que[len(terms)].append(pair)
 
     while idx:
         new_pairs = set()
@@ -176,7 +176,7 @@ def reduce_binary_polynomial(poly: BinaryPolynomial) -> Tuple[
                 reduced_terms.append((new_term, bias))
 
         for new_pair in new_pairs:
-            que[len(idx[new_pair])].add(new_pair)
+            que[len(idx[new_pair])].append(new_pair)
 
     return reduced_terms, constraints
 
